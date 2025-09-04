@@ -1,6 +1,7 @@
-import { _decorator, Component, instantiate, Node, Prefab, randomRange, Vec3 } from 'cc';
+import { _decorator, Animation, Component, instantiate, Node, Prefab, randomRange, randomRangeInt, Sprite, SpriteFrame, UITransform, Vec2, Vec3 } from 'cc';
 import { MovingObject } from './MovingObject';
 import { GameView } from '../GameView';
+import { Constants } from '../Data/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ObjectSpawner')
@@ -10,6 +11,9 @@ export class ObjectSpawner extends Component {
 
     @property(Prefab)
     public rewardPrefab: Prefab = null;
+
+    @property(Prefab)
+    public mobPrefab: Prefab = null;
 
     @property({ tooltip: 'Kích thước ban đầu của Object Pool' })
     public poolSize: number = 10;
@@ -26,14 +30,25 @@ export class ObjectSpawner extends Component {
     @property(GameView)
     private GameView: GameView;
 
+    @property([SpriteFrame])
+    public rewardSpriteFrame: SpriteFrame[] = [];
+
+    @property([SpriteFrame])
+    public obstacleSpriteFrame: SpriteFrame[] = [];
+
+    @property([SpriteFrame])
+    public mobSpriteFrame: SpriteFrame[] = [];
+
     private timeSinceLastSpawn: number = 0;
     private nextSpawnTime: number = 0;
     private obstaclePool: Node[] = [];
     private rewardPool: Node[] = [];
+    private mobPool: Node[] = [];
 
     protected onLoad(): void {
         this.initializePool(this.obstaclePrefab, this.obstaclePool);
         this.initializePool(this.rewardPrefab, this.rewardPool);
+        this.initializePool(this.mobPrefab, this.mobPool);
         this.nextSpawnTime = randomRange(this.minSpawnInterval, this.maxSpawnInterval);
     }
 
@@ -60,8 +75,31 @@ export class ObjectSpawner extends Component {
     }
 
     protected spawnNewObject(): void {
-        const isObstacle = Math.random() < 0.5;
-        const objectPool = isObstacle ? this.obstaclePool : this.rewardPool;
+        // Chọn ngẫu nhiên loại đối tượng để sinh ra: 0 = Obstacle, 1 = Reward, 2 = Mob
+        const objectType = randomRangeInt(0, 3);
+        let objectPool: Node[] = [];
+        let spriteFrames: SpriteFrame[] = [];
+
+        switch (objectType) {
+            case 0:
+                objectPool = this.obstaclePool;
+                spriteFrames = this.obstacleSpriteFrame;
+                break;
+            case 1:
+                objectPool = this.rewardPool;
+                spriteFrames = this.rewardSpriteFrame;
+                break;
+            case 2:
+                objectPool = this.mobPool;
+                spriteFrames = this.mobSpriteFrame;
+                console.log(this.mobSpriteFrame)
+                break;
+        }
+
+        if (spriteFrames.length === 0) {
+            console.warn('Không có SpriteFrame để sinh vật thể!');
+            return;
+        }
 
         // Tìm một đối tượng không hoạt động trong pool
         const newObject = objectPool.find(obj => !obj.active);
@@ -70,19 +108,53 @@ export class ObjectSpawner extends Component {
             console.warn('Object Pool đã hết, cần tăng poolSize!');
             return;
         }
+
+        // Chọn một SpriteFrame ngẫu nhiên
+        const randomSpriteNumber = Math.floor(Math.random() * spriteFrames.length);
+        const randomSpriteFrame = spriteFrames[randomSpriteNumber];
+
+        // Gán SpriteFrame cho vật phẩm
+        const movingScript = newObject.getComponent(MovingObject);
+        if (movingScript) {
+            movingScript.setSpriteFrame(randomSpriteFrame);
+            movingScript.setSpawner(this); // Đặt spawner sau khi setSpriteFrame
+            const contentSize = newObject.getComponent(UITransform);
+            if (newObject.getComponent(MovingObject).isObstacle) {
+                if (randomSpriteFrame === spriteFrames[1]) {
+                    contentSize.setContentSize(285, 155);
+                } else {
+                    contentSize.setContentSize(150, 155);
+                }
+            }
+        } else {
+            // Nếu không có MovingObject script, gán trực tiếp cho Sprite component
+            const spriteComp = newObject.getComponent(Sprite);
+            if (spriteComp) {
+                spriteComp.spriteFrame = randomSpriteFrame;
+            }
+        }
         
         // Vị trí xuất hiện ở bên phải màn hình
-        const xPos = this.GameView.Bg1UITransform.width / 2 + 100; 
+        const xPos = this.GameView.Bg1UITransform.width / 2 - 100; 
         const yPos = randomRange(-this.verticalRange, this.verticalRange);
         
         // Kích hoạt đối tượng và đặt vị trí
         newObject.active = true;
-        newObject.setPosition(xPos, newObject.position.y, 0);
-
-        const movingScript = newObject.getComponent(MovingObject);
-        if (movingScript) {
-            movingScript.setSpawner(this);
+        if (objectType === 2) {
+            newObject.setPosition(xPos, Constants.randomPosYMob[randomRangeInt(0, 2)], 0);
+            newObject.getComponent(Animation).defaultClip = newObject.getComponent(Animation).clips[randomSpriteNumber];
+            newObject.getComponent(Animation).play();
+            console.log('number: ', randomSpriteNumber)
+            console.log('1: ', newObject.position);
+        } else {
+            newObject.setPosition(xPos, newObject.position.y, 0);
+            console.log('2: ', newObject.position);
         }
+
+        // const movingScript = newObject.getComponent(MovingObject);
+        // if (movingScript) {
+        //     movingScript.setSpawner(this);
+        // }
     }
 
     public returnObjectToPool(objectNode: Node): void {

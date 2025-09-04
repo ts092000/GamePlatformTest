@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, randomRangeInt, Vec2, Vec3 } from 'cc';
 import { GameModel } from './GameModel';
 import { GameView } from './GameView';
 const { ccclass, property } = _decorator;
@@ -15,7 +15,7 @@ export class GameController extends Component {
         if (this.GameView.Bg1UITransform) {
             this.GameModel.BgWidth = this.GameView.Bg1UITransform.width;
         }
-        console.log(this.GameModel.BgWidth);
+        this.GameView.Bg1Sprite.spriteFrame = this.GameView.Bg2Sprite.spriteFrame = this.GameView.BgSf[randomRangeInt(0, 2)];
     }
 
     protected start(): void {

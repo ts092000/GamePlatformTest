@@ -28,6 +28,8 @@ export class Constants extends Component {
 
     public static isDoneTutorial: boolean = false;
 
+    public static randomPosYMob: number[] = [0, -315];
+
     //------------------ALL TAG----------------------//
     // - tag = 1 : Ground
     // - tag = 2 : Obstacles

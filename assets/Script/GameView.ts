@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, UITransform } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameView')
@@ -35,6 +35,40 @@ export class GameView extends Component {
     public set Bg2UITransform(bg2UITransform : UITransform) {
         this.bg2UITransform = bg2UITransform;
     }
+
+    @property(Sprite)
+    private bg1Sprite: Sprite;
+
+    public get Bg1Sprite() : Sprite {
+        return this.bg1Sprite;
+    }
+    
+    public set Bg1Sprite(bg1Sprite : Sprite) {
+        this.bg1Sprite = bg1Sprite;
+    }
+
+    @property(Sprite)
+    private bg2Sprite: Sprite;
+
+    public get Bg2Sprite() : Sprite {
+        return this.bg2Sprite;
+    }
+    
+    public set Bg2Sprite(bg2Sprite : Sprite) {
+        this.bg2Sprite = bg2Sprite;
+    }
+
+    @property([SpriteFrame])
+    private bgSf: SpriteFrame[] = [];
+
+    public get BgSf() : SpriteFrame[] {
+        return this.bgSf;
+    }
+    
+    public set BgSf(bgSf : SpriteFrame[]) {
+        this.bgSf = bgSf;
+    }
+
 }
 
 

@@ -39,7 +39,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -320,
+      "y": -322.5,
       "z": 0
     },
     "_lrot": {
@@ -147,7 +147,7 @@
       "__id__": 7
     },
     "tag": 0,
-    "_group": 1,
+    "_group": 4,
     "_density": 1,
     "_sensor": false,
     "_friction": 0.2,
@@ -622,6 +622,12 @@
       "__id__": 9
     },
     "speed": 500,
+    "isReward": false,
+    "isObstacle": true,
+    "isMob": false,
+    "nodeSprite": {
+      "__id__": 4
+    },
     "_id": ""
   },
   {
