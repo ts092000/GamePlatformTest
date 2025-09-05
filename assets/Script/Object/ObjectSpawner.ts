@@ -40,19 +40,19 @@ export class ObjectSpawner extends Component {
     public mobSpriteFrame: SpriteFrame[] = [];
 
     private timeSinceLastSpawn: number = 0;
-    private nextSpawnTime: number = 0;
-    private obstaclePool: Node[] = [];
-    private rewardPool: Node[] = [];
-    private mobPool: Node[] = [];
+    public nextSpawnTime: number = 0;
+    public obstaclePool: Node[] = [];
+    public rewardPool: Node[] = [];
+    public mobPool: Node[] = [];
 
     protected onLoad(): void {
-        this.initializePool(this.obstaclePrefab, this.obstaclePool);
-        this.initializePool(this.rewardPrefab, this.rewardPool);
-        this.initializePool(this.mobPrefab, this.mobPool);
-        this.nextSpawnTime = randomRange(this.minSpawnInterval, this.maxSpawnInterval);
+        // this.initializePool(this.obstaclePrefab, this.obstaclePool);
+        // this.initializePool(this.rewardPrefab, this.rewardPool);
+        // this.initializePool(this.mobPrefab, this.mobPool);
+        // this.nextSpawnTime = randomRange(this.minSpawnInterval, this.maxSpawnInterval);
     }
 
-    private initializePool(prefab: Prefab, pool: Node[]) {
+    public initializePool(prefab: Prefab, pool: Node[]) {
         if (!prefab) {
             return;
         }
@@ -135,7 +135,8 @@ export class ObjectSpawner extends Component {
         }
         
         // Vị trí xuất hiện ở bên phải màn hình
-        const xPos = this.GameView.Bg1UITransform.width / 2 - 100; 
+        const xPos = randomRange(this.GameView.Bg1UITransform.width / 2 - 1000, this.GameView.Bg1UITransform.width / 2 - 800); 
+        console.log(xPos)
         const yPos = randomRange(-this.verticalRange, this.verticalRange);
         
         // Kích hoạt đối tượng và đặt vị trí
@@ -144,11 +145,8 @@ export class ObjectSpawner extends Component {
             newObject.setPosition(xPos, Constants.randomPosYMob[randomRangeInt(0, 2)], 0);
             newObject.getComponent(Animation).defaultClip = newObject.getComponent(Animation).clips[randomSpriteNumber];
             newObject.getComponent(Animation).play();
-            console.log('number: ', randomSpriteNumber)
-            console.log('1: ', newObject.position);
         } else {
             newObject.setPosition(xPos, newObject.position.y, 0);
-            console.log('2: ', newObject.position);
         }
 
         // const movingScript = newObject.getComponent(MovingObject);

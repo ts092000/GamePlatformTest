@@ -1,7 +1,16 @@
-import { _decorator, Component, Node, randomRangeInt, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, randomRange, randomRangeInt, Vec2, Vec3 } from 'cc';
 import { GameModel } from './GameModel';
 import { GameView } from './GameView';
+import { ObjectSpawner } from './Object/ObjectSpawner';
+import { Constants } from './Data/Constants';
 const { ccclass, property } = _decorator;
+
+// Khai báo các trạng thái của game
+export enum GameState {
+    MENU,
+    PLAYING,
+    GAMEOVER,
+}
 
 @ccclass('GameController')
 export class GameController extends Component {
@@ -11,7 +20,18 @@ export class GameController extends Component {
     @property(GameView)
     private GameView: GameView;
 
+    @property(ObjectSpawner)
+    private ObjectSpawner: ObjectSpawner;
+
+    // Thuộc tính để lưu trữ trạng thái hiện tại của game
+    private currentState: GameState = GameState.MENU;
+
+    private score: number = 0;
+    private tempscore: number = 0;
+    private processScoreStage: number = 0;
+
     protected onLoad(): void {
+        this.changeState(GameState.MENU);
         if (this.GameView.Bg1UITransform) {
             this.GameModel.BgWidth = this.GameView.Bg1UITransform.width;
         }
@@ -24,7 +44,7 @@ export class GameController extends Component {
 
     protected update(dt: number): void {
         //Move background to the left
-        this.GameModel.BgNode.translate(new Vec3(-this.GameModel.speed * dt, 0, 0));
+        this.GameModel.BgNode.translate(new Vec3(-Constants.speed * dt, 0, 0));
 
         //Loop background
         if (this.GameModel.BgNode.position.x <= -this.GameModel.BgWidth) {
@@ -32,6 +52,101 @@ export class GameController extends Component {
                 + this.GameModel.BgWidth, this.GameModel.BgNode.position.y, 
                 this.GameModel.BgNode.position.y);
         }
+    }
+
+    public changeState(newState: GameState) {
+        // Tắt tất cả UI trước
+        this.GameModel.MenuNode.active = false;
+        this.GameModel.GameOverNode.active = false;
+        // this.gameOverUI.active = false;
+
+        // Cập nhật trạng thái
+        this.currentState = newState;
+
+        switch (this.currentState) {
+            case GameState.MENU:
+                this.handleMenuState();
+                break;
+            case GameState.PLAYING:
+                this.handlePlayingState();
+                break;
+            case GameState.GAMEOVER:
+                this.handleGameOverState();
+                break;
+        }
+    }
+
+    private handleMenuState(): void {
+        this.GameModel.MenuNode.active = true;
+        this.GameModel.GameOverNode.active = false;
+    }
+
+    private handlePlayingState(): void {
+        Constants.speed = 2000;
+        this.tempscore = Constants.scoreGameProcess[this.processScoreStage];
+        this.GameView.ScorePlayinghLabel.string = `0`;
+        this.schedule(this.addScorePerSecond, 1);
+        this.ObjectSpawner.initializePool(this.ObjectSpawner.obstaclePrefab, this.ObjectSpawner.obstaclePool);
+        this.ObjectSpawner.initializePool(this.ObjectSpawner.rewardPrefab, this.ObjectSpawner.rewardPool);
+        this.ObjectSpawner.initializePool(this.ObjectSpawner.mobPrefab, this.ObjectSpawner.mobPool);
+        this.ObjectSpawner.nextSpawnTime = randomRange(this.ObjectSpawner.minSpawnInterval, this.ObjectSpawner.maxSpawnInterval);
+        this.GameModel.MenuNode.active = false;
+        this.GameModel.GameOverNode.active = false;
+    }
+
+    private handleGameOverState(): void {
+        this.unschedule(this.addScorePerSecond);
+        this.GameModel.MenuNode.active = false;
+        this.GameModel.GameOverNode.active = true;
+    }
+    
+    // Phương thức để gọi từ các button trong UI
+    private onStartGame(): void {
+        this.GameView.FadeNode.active = true;
+        this.GameView.FadeAnim.play();
+        this.GameModel.BtnStartGameNode.active = false;
+        this.changeState(GameState.PLAYING);
+    }
+
+    private onRestartGame(): void {
+        this.GameView.FadeNode.active = true;
+        this.GameView.FadeAnim.play();
+        this.GameModel.BtnStartGameNode.active = false;
+        this.changeState(GameState.PLAYING);
+    }
+
+    private onBackToMenu(): void {
+        this.GameView.FadeNode.active = true;
+        this.GameView.FadeAnim.play();
+        this.GameModel.BtnStartGameNode.active = true;
+        this.changeState(GameState.MENU);
+    }
+
+    private addScorePerSecond(): void {
+        // Cộng thêm điểm
+        this.score += this.GameModel.pointsPerSecond;
+        // Cập nhật giao diện điểm
+        this.updateScoreUI();
+        if (this.score > 0 && this.score >= this.tempscore) {
+            this.processScoreStage += 1;
+            Constants.speed += 150;
+            this.tempscore = Constants.scoreGameProcess[this.processScoreStage];
+            this.GameModel.pointsPerSecond += 1;
+            console.log('process')
+        }
+    }
+
+    // Phương thức để cập nhật UI
+    private updateScoreUI() {
+        if (this.GameView.ScorePlayinghLabel) {
+            this.GameView.ScorePlayinghLabel.string = `${this.score}`;
+        }
+    }
+
+    // Phương thức công khai để các script khác có thể thêm điểm
+    public addScore(points: number) {
+        this.score += points;
+        this.updateScoreUI();
     }
 }
 

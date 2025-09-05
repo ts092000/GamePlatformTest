@@ -25,10 +25,12 @@ export class Constants extends Component {
 
     public static volumeGameStatic: boolean = true;
     public static scoreGameStatic: number[] = [0];
+    public static scoreGameProcess: number[] = [20, 50, 100 , 200, 500, 1000, 2000, 5000, 10000, 100000];
 
     public static isDoneTutorial: boolean = false;
 
     public static randomPosYMob: number[] = [0, -315];
+    public static speed: number = 500;
 
     //------------------ALL TAG----------------------//
     // - tag = 1 : Ground

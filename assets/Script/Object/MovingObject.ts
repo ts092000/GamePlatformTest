@@ -1,4 +1,5 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import { Constants } from '../Data/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('MovingObject')
@@ -39,21 +40,11 @@ export class MovingObject extends Component {
         const sprite = this.nodeSprite;
         if (sprite) {
             sprite.spriteFrame = spriteFrame;
-            // Cập nhật lại kích thước và vị trí biến mất sau khi đổi sprite
-            // this.updateScreenExitX(); 
         }
     }
-
-    // private updateScreenExitX(): void {
-    //     if (this.uiTransform) {
-    //         // screenExitX là vị trí X mà cạnh phải của object sẽ chạm vào cạnh trái của màn hình
-    //         this.screenExitX = -this.node.position.x - this.uiTransform.width;
-    //     }
-    // }
-
     protected update(dt: number): void {
         const currentPos = this.node.position;
-        const newPos = new Vec3(currentPos.x - this.speed * dt, currentPos.y, currentPos.z);
+        const newPos = new Vec3(currentPos.x - Constants.speed * dt, currentPos.y, currentPos.z);
         this.node.setPosition(newPos);
 
         const uiTransform = this.node.getComponent(UITransform);
@@ -71,7 +62,6 @@ export class MovingObject extends Component {
         // Giả sử màn hình của bạn bắt đầu tại x = 0
         if (rightEdgeOfObject < 0) {
             if (this.spawner) {
-                console.log('bien mat');
                 this.spawner.returnObjectToPool(this.node);
             }
         }

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform } from 'cc';
+import { _decorator, Animation, Component, Label, Node, Sprite, SpriteFrame, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameView')
@@ -69,6 +69,38 @@ export class GameView extends Component {
         this.bgSf = bgSf;
     }
 
+    @property(Node)
+    private fadeNode: Node;
+
+    public get FadeNode() : Node {
+        return this.fadeNode;
+    }
+    
+    public set FadeNode(fadeNode : Node) {
+        this.fadeNode = fadeNode;
+    }
+
+    @property(Animation)
+    private fadeAnim: Animation;
+
+    public get FadeAnim() : Animation {
+        return this.fadeAnim;
+    }
+    
+    public set FadeAnim(fadeAnim : Animation) {
+        this.fadeAnim = fadeAnim;
+    }
+
+    @property(Label)
+    private scorePlayinghLabel: Label;
+
+    public get ScorePlayinghLabel() : Label {
+        return this.scorePlayinghLabel;
+    }
+    
+    public set ScorePlayinghLabel(scorePlayinghLabel : Label) {
+        this.scorePlayinghLabel = scorePlayinghLabel;
+    }
 }
 
 

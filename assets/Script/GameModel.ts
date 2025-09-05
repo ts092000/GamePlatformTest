@@ -29,6 +29,42 @@ export class GameModel extends Component {
     public set BgNode(bgNode : Node) {
         this.bgNode = bgNode;
     }
+
+    @property(Node)
+    private menuNode: Node;
+
+    public get MenuNode() : Node {
+        return this.menuNode;
+    }
+    
+    public set MenuNode(menuNode : Node) {
+        this.menuNode = menuNode;
+    }
+
+    @property(Node)
+    private gameOverNode: Node;
+
+    public get GameOverNode() : Node {
+        return this.gameOverNode;
+    }
+    
+    public set GameOverNode(gameOverNode : Node) {
+        this.gameOverNode = gameOverNode;
+    }
+
+    @property(Node)
+    private btnStartGameNode: Node;
+
+    public get BtnStartGameNode() : Node {
+        return this.btnStartGameNode;
+    }
+    
+    public set BtnStartGameNode(btnStartGameNode : Node) {
+        this.btnStartGameNode = btnStartGameNode;
+    }
+
+    @property({ tooltip: 'Số điểm tăng mỗi giây' })
+    public pointsPerSecond: number = 1;
 }
 
 
