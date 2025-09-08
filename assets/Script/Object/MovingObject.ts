@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import { _decorator, Collider2D, Component, Node, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
 import { Constants } from '../Data/Constants';
 const { ccclass, property } = _decorator;
 
@@ -65,6 +65,7 @@ export class MovingObject extends Component {
                 this.spawner.returnObjectToPool(this.node);
             }
         }
+        this.node.getComponent(Collider2D).apply();
     }
 }
 

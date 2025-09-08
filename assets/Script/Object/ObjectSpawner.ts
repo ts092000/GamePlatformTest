@@ -119,13 +119,13 @@ export class ObjectSpawner extends Component {
             movingScript.setSpriteFrame(randomSpriteFrame);
             movingScript.setSpawner(this); // Đặt spawner sau khi setSpriteFrame
             const contentSize = newObject.getComponent(UITransform);
-            if (newObject.getComponent(MovingObject).isObstacle) {
-                if (randomSpriteFrame === spriteFrames[1]) {
-                    contentSize.setContentSize(285, 155);
-                } else {
-                    contentSize.setContentSize(150, 155);
-                }
-            }
+            // if (newObject.getComponent(MovingObject).isObstacle) {
+            //     if (randomSpriteFrame === spriteFrames[1]) {
+            //         contentSize.setContentSize(285, 155);
+            //     } else {
+            //         contentSize.setContentSize(150, 155);
+            //     }
+            // }
         } else {
             // Nếu không có MovingObject script, gán trực tiếp cho Sprite component
             const spriteComp = newObject.getComponent(Sprite);

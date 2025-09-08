@@ -1,8 +1,9 @@
-import { _decorator, Component, Node, randomRange, randomRangeInt, Vec2, Vec3 } from 'cc';
+import { _decorator, Collider2D, Component, Contact2DType, director, Input, input, IPhysics2DContact, Node, randomRange, randomRangeInt, Vec2, Vec3 } from 'cc';
 import { GameModel } from './GameModel';
 import { GameView } from './GameView';
 import { ObjectSpawner } from './Object/ObjectSpawner';
 import { Constants } from './Data/Constants';
+import { MovingObject } from './Object/MovingObject';
 const { ccclass, property } = _decorator;
 
 // Khai báo các trạng thái của game
@@ -30,6 +31,9 @@ export class GameController extends Component {
     private tempscore: number = 0;
     private processScoreStage: number = 0;
 
+    @property
+    public jumpForce: number = 300;
+
     protected onLoad(): void {
         this.changeState(GameState.MENU);
         if (this.GameView.Bg1UITransform) {
@@ -40,6 +44,7 @@ export class GameController extends Component {
 
     protected start(): void {
         // this.GameModel.BgWidth = this.GameView.BgSprite.spriteFrame.originalSize.width;
+        
     }
 
     protected update(dt: number): void {
@@ -82,7 +87,7 @@ export class GameController extends Component {
     }
 
     private handlePlayingState(): void {
-        Constants.speed = 2000;
+        Constants.speed = 500;
         this.tempscore = Constants.scoreGameProcess[this.processScoreStage];
         this.GameView.ScorePlayinghLabel.string = `0`;
         this.schedule(this.addScorePerSecond, 1);
@@ -98,6 +103,7 @@ export class GameController extends Component {
         this.unschedule(this.addScorePerSecond);
         this.GameModel.MenuNode.active = false;
         this.GameModel.GameOverNode.active = true;
+        input.off(Input.EventType.TOUCH_START, this.onJump, this);
     }
     
     // Phương thức để gọi từ các button trong UI
@@ -105,6 +111,8 @@ export class GameController extends Component {
         this.GameView.FadeNode.active = true;
         this.GameView.FadeAnim.play();
         this.GameModel.BtnStartGameNode.active = false;
+        this.GameModel.PlayerCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        input.on(Input.EventType.TOUCH_START, this.onJump, this);
         this.changeState(GameState.PLAYING);
     }
 
@@ -147,6 +155,45 @@ export class GameController extends Component {
     public addScore(points: number) {
         this.score += points;
         this.updateScoreUI();
+    }
+
+    private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null): void {
+            if (!otherCollider) return;
+            const otherNode = otherCollider.node;
+    
+            if (otherCollider.tag === 1) {
+                this.addScore(1)
+                const movingObject = otherNode.getComponent(MovingObject);
+                if (movingObject) {
+                    movingObject.setSpawner(this.node.parent.getComponent('ObjectSpawner'));
+                    this.ObjectSpawner.returnObjectToPool(otherNode);
+                    console.log('an');
+                }
+            } else if (otherCollider.tag === 2) {
+                console.log('Game Over!');
+                this.handleGameOverState();
+                director.pause();
+            } else if (otherCollider.tag === 3 && this.GameModel.PlayerRb2d.gravityScale === 3) {
+                // input.off(Input.EventType.TOUCH_START, this.onJump, this);
+                this.GameModel.PlayerNode.setPosition(new Vec3(-570, -420));
+                this.GameModel.PlayerSpineAnim.setAnimation(0, 'run', true);
+                console.log('va cham');
+                this.GameModel.PlayerRb2d.gravityScale = 0;
+                setTimeout(() => {
+                    input.on(Input.EventType.TOUCH_START, this.onJump, this);
+                }, 150);
+            }
+        }
+    
+    private onJump(): void {
+        this.GameModel.PlayerCollider.apply();
+        setTimeout(() => {
+            this.GameModel.PlayerRb2d.gravityScale = 3;
+        }, 150);
+        this.GameModel.PlayerRb2d.linearVelocity = new Vec2(this.GameModel.PlayerRb2d.linearVelocity.x, this.jumpForce);
+        this.GameModel.PlayerSpineAnim.setAnimation(0, 'jump2', false);
+        input.off(Input.EventType.TOUCH_START, this.onJump, this);
+        console.log('nhay')
     }
 }
 
